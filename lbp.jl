@@ -8,6 +8,8 @@ im = Images.raw(im)
 fg = Images.raw(fg)
 bg = Images.raw(bg)
 
+f = open("out.txt", "w")
+
 ϵ = 0.01
 
 function in_bounds(location)
@@ -140,6 +142,8 @@ function get_value(message, x)
 end
 
 @memoize function m(t, i1, j1, i2, j2)
+    # println(f, (t, (i1, j1), (i2, j2)))
+    # flush(f)
     if t == 0
         return [1, 1]
     else
@@ -158,7 +162,7 @@ end
                     if !in_bounds(location)
                         continue
                     end
-                    product = product * get_value(m(t-1, location[1], location[2], i1, i2), x1)
+                    product = product * get_value(m(t-1, location[1], location[2], i1, j1), x1)
                 end
 
                 push!(partial_msg, product)
@@ -179,6 +183,7 @@ function posterior(x, t, i, j)
             if !in_bounds(location)
                 continue
             end
+            # print(location)
             product = product * get_value(m(t, location[1], location[2], i, j), x_poss)
         end
         push!(unscaled, product)
@@ -187,22 +192,29 @@ function posterior(x, t, i, j)
     return get_value(posteriors, x)
 end
 
-# posterior(1, 1, 140, 160)
-
-
-# posterior(1, 1, 1, 1)
-# images[1][1, 1] = posterior(1, 1, 1, 1)[1]
-
-f = open("out.txt", "w")
 images = []
-for t in 1:2
+for t in 1:30
     push!(images, Matrix{Float64}(240, 160))
     for i in 1:240
         for j in 1:160
             println(f, (i, j))
             # print(i, ' ', j)
             # print(images[t])
+            flush(f)
             images[t][i, j] = posterior(1, t, i, j)
         end
     end
 end
+
+Images.grayim(images[30])
+for t in 1:30
+    Images.imwrite(transpose(images[t]), "estimate_$(t).png")
+end
+
+zero_img = Matrix{Float64}(240, 160)
+for i in 1:240
+    for j in 1:160
+        zero_img[i, j] = posterior(1, 0, i, j)
+    end
+end
+Images.imwrite(transpose(zero_img), "estimate_0.png")
