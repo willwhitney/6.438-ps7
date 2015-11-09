@@ -1,3 +1,4 @@
+```julia
 require("Images")
 using Memoize
 
@@ -81,7 +82,6 @@ for px in bg_px
     bg_cov = bg_cov + px_cov
 end
 bg_cov = bg_cov / length(bg_px)
-
 
 function means(x)
     if x == 0
@@ -211,3 +211,4 @@ for i in 1:240
     end
 end
 Images.imwrite(transpose(zero_img), "estimate_0.png")
+```
